@@ -304,8 +304,16 @@ export class ModelBuilder extends Builder {
      * @returns {string}
      */
     private static buildIndexExports(tablesMetadata: ITablesMetadata): string {
+        const attrTableDict = new Map<string, number>();
+        Object.values(tablesMetadata)
+            .map(t => t.name)    
+            .filter(t => t.toLowerCase().endsWith('attributes'))
+            .reduce((p, c) => {
+                p.set(c.toLowerCase(), 1);
+                return p;
+            }, attrTableDict);
         return Object.values(tablesMetadata)
-            .map(t =>  nodeToString(generateIndexExport(t.name)))
+            .map(t =>  nodeToString(generateIndexExport(t.name, !!attrTableDict.get(t.name.toLowerCase() + 'attributes'))))
             .join('\n');
     }
 

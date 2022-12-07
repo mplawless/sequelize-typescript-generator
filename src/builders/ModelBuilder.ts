@@ -183,7 +183,9 @@ export class ModelBuilder extends Builder {
 
         // Add models for foreign keys
         Object.values(tableMetadata.columns).forEach(col => {
-            col.foreignKey && importModels.add(col.foreignKey.targetModel.name);
+            if (!!col.foreignKey && col.foreignKey.targetModel.fullTableName != tableMetadata.fullTableName) {
+                importModels.add(col.foreignKey.targetModel.name);
+            }
         });
 
         [...importModels].forEach(modelName => {

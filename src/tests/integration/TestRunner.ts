@@ -6,7 +6,7 @@ import { ModelCtor, Model, Sequelize } from 'sequelize-typescript';
 import { buildSequelizeOptions } from '../environment';
 import { createConnection } from '../../connection';
 import { IConfig } from '../../config';
-import { Dialect, ITableName } from '../../dialects/Dialect';
+import { Dialect, ITableMetadata, ITableName, ITablesMetadata } from '../../dialects/Dialect';
 import { Dictionary, getTransformer, populateFullTableNameDictionary } from '../../dialects/utils';
 import { ModelBuilder } from '../../builders';
 import { TransformCases, TransformTarget, TransformFn } from '../../config/IConfig';
@@ -573,7 +573,18 @@ export class TestRunner {
                     connection!.addModels([ ...Object.values(models) ]);
 
                     const allTables = await dialect.fetchTables(connection, config);
-                    populateFullTableNameDictionary(allTables, tableNameDictionary);
+
+                    const tablesMetadata: ITablesMetadata = {};
+                    for (const table of allTables) {
+                        const tableMetadata: ITableMetadata = {
+                            originName: table.name,
+                            ...table,
+                            columns: {}
+                        };
+                        tablesMetadata[tableMetadata.fullTableName] = tableMetadata;
+                    }
+
+                    populateFullTableNameDictionary(tablesMetadata, tableNameDictionary);
                     parsedAssociations = AssociationsParser.parse(tableNameDictionary, associationsFilePath);
                 });
 

@@ -155,6 +155,7 @@ export abstract class Dialect {
         let connection: Sequelize | undefined;
         const tablesMetadata: ITablesMetadata = {};
         const tableNameDictionary: Dictionary<ITableName> = {};
+        const dupTableDictionary: Dictionary<number> = {};
 
         try {
             // Set schema for Postgres to 'public' if not provided
@@ -180,8 +181,6 @@ export abstract class Dialect {
             const tables = allTables
                 .filter(({ fullTableName, name }) => includeFullTableNames.length == 0 || includeFullTableNames.some(i => i === fullTableName.toLowerCase() || i === noSchemaPrefix + name.toLowerCase()))
                 .filter(({ fullTableName, name }) => skipFullTableNames.length == 0 || !skipFullTableNames.some(i => i === fullTableName.toLowerCase() || i === noSchemaPrefix + name.toLowerCase()));
-
-            populateFullTableNameDictionary(tables, tableNameDictionary);
 
             for (const table of tables) {
                 const columnsMetadata = await this.fetchColumnsMetadata(connection, config, table);
@@ -210,6 +209,7 @@ export abstract class Dialect {
                 }
 
                 tablesMetadata[tableMetadata.fullTableName] = tableMetadata;
+                dupTableDictionary[tableMetadata.name] = (dupTableDictionary[tableMetadata.name] || 0) + 1;
             }
         }
         catch(err) {
@@ -219,6 +219,21 @@ export abstract class Dialect {
         finally {
             connection && await connection.close();
         }
+
+        // Add schema to name for duplicate table names and files
+        for (const [tableName, tableMetadata] of Object.entries(tablesMetadata)) {
+            if (dupTableDictionary[tableMetadata.name] > 1) {
+                tableMetadata.name = tableMetadata.schema + tableMetadata.name;
+            }
+        }
+
+        // Apply transformations if required
+        if (config.metadata?.case) {
+            for (const [tableName, tableMetadata] of Object.entries(tablesMetadata)) {
+                tablesMetadata[tableName] = caseTransformer(tableMetadata, config.metadata.case);
+            }
+        }
+        populateFullTableNameDictionary(tablesMetadata, tableNameDictionary);
 
         // Apply associations if required
         if (config.metadata?.associationsFile) {

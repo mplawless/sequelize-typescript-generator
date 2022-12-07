@@ -171,10 +171,15 @@ export class ModelBuilder extends Builder {
         const importModels = new Set<string>();
 
         // Add models for associations
-        tableMetadata.associations?.forEach(a => {
-            importModels.add(a.targetModel.name);
-            a.joinModel && importModels.add(a.joinModel.name);
-        });
+        if (!!tableMetadata.associations) {
+            for (const a of tableMetadata.associations) {
+                if (a.targetModel.fullTableName == tableMetadata.fullTableName) {
+                    continue;
+                }
+                importModels.add(a.targetModel.name);
+                !!a.joinModel && importModels.add(a.joinModel.name);
+            }
+        }
 
         // Add models for foreign keys
         Object.values(tableMetadata.columns).forEach(col => {

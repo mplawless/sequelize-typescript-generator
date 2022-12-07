@@ -104,6 +104,8 @@ export class AssociationsParser {
 
         const lines = fs.readFileSync(path)
             .toString()
+            .split('\r\n')
+            .join('\n')
             .split('\n')
             .filter(line => line.length); // Filter empty lines
 

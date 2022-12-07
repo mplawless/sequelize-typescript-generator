@@ -1,4 +1,4 @@
-import { ITableMetadata, ITableName } from './Dialect';
+import { ITableMetadata, ITableName, ITablesMetadata } from './Dialect';
 import { TransformCase, TransformFn, TransformMap, TransformTarget } from '../config/IConfig';
 import { camelCase, constantCase, pascalCase, snakeCase } from 'change-case/dist';
 import { Optional } from 'sequelize';
@@ -257,20 +257,25 @@ export const decorateFullTableName = (table: Partial<ITableName>, schemaSeparato
     } as ITableName;
 }
 
-export const populateFullTableNameDictionary = (tables: ITableName[], dictionary: ObjDictionary) => {
-    tables.forEach(t => {
-        const {name, fullTableName, schema} = t;
+export const populateFullTableNameDictionary = (tables: ITablesMetadata, dictionary: ObjDictionary) => {
+
+    const groupedLoweredNames = groupBy(Object.entries(tables).map(t => t[1].originName.toLowerCase()), n => n);
+    for (const [tableName, tableMetadata] of Object.entries(tables)) {
+        const {name, fullTableName, schema, originName} = tableMetadata;
         const tableName: ITableName = {
             name, fullTableName, schema
         };
 
-        dictionary[t.fullTableName] = tableName;
-        dictionary[t.fullTableName.toLowerCase()] = tableName;
-        const loweredName = t.name.toLowerCase();
-        if (tables.filter(a => a.name.toLowerCase() == loweredName).length === 1) {
+        dictionary[fullTableName] = tableName;
+        dictionary[fullTableName.toLowerCase()] = tableName;
+        const loweredName = originName.toLowerCase();
+        if (groupedLoweredNames.get(loweredName)?.length === 1) {
             // only 1 table has this name, regardless of schema
             dictionary[loweredName] = tableName;
             dictionary[noSchemaPrefix + loweredName] = tableName;
+        } else {
+            //multiple tables with the same name (different schema), so lookup on the 'name' which will include the schema
+            dictionary[name] = tableName;
         }
-    });
+    }
 }

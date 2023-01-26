@@ -208,6 +208,10 @@ export class DialectMSSQL extends Dialect {
     ): Promise<IColumnMetadata[]> {
         const columnsMetadata: IColumnMetadata[] = [];
 
+        const schemaClause = !!table.schema
+            ? `AND c.TABLE_SCHEMA = N'${table.schema}'`
+            : '';
+
         const query = `
             SELECT 
                 c.*,
@@ -228,7 +232,7 @@ export class DialectMSSQL extends Dialect {
                 ON sc.id = t.id AND sc.name = c.COLUMN_NAME
             LEFT OUTER JOIN sys.extended_properties ep
                  ON ep.major_id = sc.id AND ep.minor_id = sc.colid AND ep.name = 'MS_Description'                                        
-            WHERE c.TABLE_CATALOG = N'${config.connection.database}' AND c.TABLE_NAME = N'${table.name}'
+            WHERE c.TABLE_CATALOG = N'${config.connection.database}' ${schemaClause} AND c.TABLE_NAME = N'${table.name}'
             ORDER BY c.ORDINAL_POSITION;
         `;
 

@@ -104,10 +104,11 @@ export class AssociationsParser {
 
         const lines = fs.readFileSync(path)
             .toString()
-            .split('\r\n')
+            .split('\r\n')                   // Convert CRLF to LF
             .join('\n')
             .split('\n')
-            .filter(line => line.length); // Filter empty lines
+            .filter(line => !!line.length)   // Filter empty lines
+            .filter(line => line[0] != '#'); // Filter commented lines
 
         for (const line of lines) {
             const row = line

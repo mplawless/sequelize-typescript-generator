@@ -81,10 +81,13 @@ export class ModelBuilder extends Builder {
                     : []
                 )
             ],
-            undefined,
-            col.name,
-            (col.autoIncrement || col.allowNull || col.defaultValue !== undefined) ?
-                ts.factory.createToken(ts.SyntaxKind.QuestionToken) : ts.factory.createToken(ts.SyntaxKind.ExclamationToken),
+            [ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword)],
+            col.name.includes(' ')
+                ? `'${col.name}'`
+                : col.name,
+            (col.autoIncrement || col.allowNull || col.defaultValue !== undefined)
+                ? ts.factory.createToken(ts.SyntaxKind.QuestionToken)
+                : undefined,  //ExclamationToken will not work with the `declare` modifier
             ts.factory.createTypeReferenceNode(dialect.mapDbTypeToJs(col.type) ?? 'any', undefined),
             undefined
         );
@@ -125,7 +128,7 @@ export class ModelBuilder extends Builder {
                     opts,
                 )
             ],
-            undefined,
+            [ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword)],
             navigationPropName,
             ts.factory.createToken(ts.SyntaxKind.QuestionToken),
             associationName.includes('Many') ?
@@ -213,7 +216,9 @@ export class ModelBuilder extends Builder {
                 [
                     ...(Object.values(columns).map(c => ts.factory.createPropertySignature(
                         undefined,
-                        ts.factory.createIdentifier(c.name),
+                        ts.factory.createIdentifier(c.name.includes(' ')
+                            ? `'${c.name}'`
+                            : c.name),
                         c.autoIncrement || c.allowNull || c.defaultValue !== undefined ?
                             ts.factory.createToken(ts.SyntaxKind.QuestionToken) : undefined,
                         ts.factory.createTypeReferenceNode(dialect.mapDbTypeToJs(c.type) ?? 'any', undefined)

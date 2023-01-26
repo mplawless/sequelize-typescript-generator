@@ -67,7 +67,7 @@ const jsDataTypesMap: { [key: string]: string } = {
     nvarchar: 'string',
     text: 'string',
     ntext: 'string',
-    date: 'string',
+    date: 'Date',
     datetime: 'Date',
     datetime2: 'Date',
     timestamp: 'Date',
@@ -75,8 +75,8 @@ const jsDataTypesMap: { [key: string]: string } = {
     time: 'Date',
     smalldatetime: 'string',
     bit: 'boolean',
-    binary: 'Uint8Array',
-    varbinary: 'Uint8Array',
+    binary: 'Buffer',
+    varbinary: 'Buffer',
     uniqueidentifier: 'string',
     xml: 'string',
 };
@@ -105,7 +105,7 @@ const sequelizeDataTypesMap: { [key: string]: AbstractDataTypeConstructor } = {
     datetimeoffset: DataType.STRING,
     time: DataType.TIME,
     smalldatetime: DataType.DATE,
-    bit: DataType.STRING,
+    bit: DataType.BOOLEAN,
     binary: DataType.STRING,
     varbinary: DataType.STRING,
     uniqueidentifier: DataType.STRING,
@@ -280,6 +280,12 @@ export class DialectMSSQL extends Dialect {
 
                 case 'datetime2':
                     columnMetadata.dataType += generatePrecisionSignature(column.DATETIME_PRECISION);
+                    break;
+                
+
+                case 'binary':
+                case 'varbinary':
+                    columnMetadata.dataType += '().BINARY';
                     break;
 
                 case 'char':

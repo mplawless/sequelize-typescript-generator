@@ -3,10 +3,10 @@ import { Options, Dialect as DialectType } from 'sequelize';
 const ports: {
     [key: string]: string
 } = {
-    'mariadb': '1235',
-    'mssql': '1236',
-    'mysql': '1237',
-    'postgres': '1238',
+    'mariadb': '1285',
+    'mssql': '1286',
+    'mysql': '1287',
+    'postgres': '1288',
 };
 
 const setEnv = (dialect: DialectType): void => {

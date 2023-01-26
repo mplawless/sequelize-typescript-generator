@@ -19,6 +19,7 @@ import {
 } from '../../dialects';
 import { AssociationsParser, AssociationType, IAssociationsParsed } from '../../dialects/AssociationsParser';
 import { getAssociationCustomPropName } from './test-helpers';
+import { ModelAttributeColumnOptions } from 'sequelize';
 
 /**
  * Workaround: deprecated GeomFromText function for MySQL
@@ -153,7 +154,7 @@ export class TestRunner {
                     }
                 };
 
-                const test = async () => {
+                const test = async (justBuild: boolean = false) => {
                     const dialect = buildDialect(testMetadata);
                     const builder = new ModelBuilder(config, dialect);
                     await builder.build();
@@ -163,13 +164,15 @@ export class TestRunner {
     
                         // @ts-ignore
                         connection!.addModels([ ...Object.values(models) ]);
+
+                        if (!justBuild) {
+                            for (const testTable of testTables) {
+                                connection!.model(testTable.name);
+                                expect(connection!.isDefined(testTable.name)).toBe(true);
+                            }
+                        }
                     } catch (er) {
                         console.error('Error importing the models.', er)
-                    }
-
-                    for (const testTable of testTables) {
-                        connection!.model(testTable.name);
-                        expect(connection!.isDefined(testTable.name)).toBe(true);
                     }
                 };
 
@@ -186,6 +189,48 @@ export class TestRunner {
                 it('should build/register models (indices + associations)', async () => {
                     await test();
                 });
+
+
+                if (!!testMetadata.testColumns) {
+
+                    type SampleModel = {readonly [x: string]: ModelAttributeColumnOptions<any>}
+                    it('should set allowNull on columns correctly', async () => {
+                        const { testColumns } = testMetadata;
+                        await test();
+
+                        const getColumns = (tableName: string) => {
+                            const nullsTable = connection!.model(tableName);
+                            const cols = nullsTable.getAttributes() as SampleModel;
+                            return cols;
+                        };
+
+                        const nullCols = getColumns(testColumns.nulls);
+                        const notNullCols = getColumns(testColumns.notNulls);
+                        const simplePrimaryCols = getColumns(testColumns.simplePrimary);
+                        const compositePrimaryCols = getColumns(testColumns.compositePrimary);
+
+                        const getColumnTestData = (cols: SampleModel, expected: boolean, includePrimary: boolean = true, includeNonPrimary: boolean = true) => {
+                            const colData = Object.entries(cols)
+                                .filter(([name, column]) => !!column.primaryKey == includePrimary || !column.primaryKey == includeNonPrimary)
+                                .map(([name, column]) => {
+                                    return {column, expected};
+                                });
+                            return colData;
+                        };
+
+                        const allTestCols = [
+                            ...getColumnTestData(nullCols, true, false),
+                            // ...getColumnTestData(notNullCols, false, false),
+                            // ...getColumnTestData(simplePrimaryCols, false, true, false),
+                            // ...getColumnTestData(compositePrimaryCols, false, true, false),
+                        ];
+
+                        allTestCols.forEach(scenario => {
+                            expect(scenario.column.allowNull).toEqual(scenario.expected);
+                        });
+                    });
+
+                }
 
                 it('should build/register models (indices)', async () => {
                     delete config.metadata!.associationsFile;

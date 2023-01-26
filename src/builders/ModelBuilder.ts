@@ -44,12 +44,12 @@ export class ModelBuilder extends Builder {
 
         const buildColumnDecoratorProps = (col: IColumnMetadata): Partial<ModelAttributeColumnOptions> => {
             const props: Partial<ModelAttributeColumnOptions> = {
-                ...col.originName && col.name !== col.originName && { field: col.originName },
-                ...col.primaryKey && { primaryKey: col.primaryKey },
-                ...col.autoIncrement && { autoIncrement: col.autoIncrement },
-                ...col.allowNull && { allowNull: col.allowNull },
-                ...col.dataType && { type: col.dataType },
-                ...col.comment && { comment: col.comment },
+                ...col.originName != undefined && col.name !== col.originName && { field: col.originName },
+                ...col.primaryKey != undefined && { primaryKey: col.primaryKey },
+                ...col.autoIncrement != undefined && { autoIncrement: col.autoIncrement },
+                ...!!col.allowNull && { allowNull: col.allowNull },
+                ...col.dataType != undefined && { type: col.dataType },
+                ...col.comment != undefined && { comment: col.comment },
                 ...col.defaultValue !== undefined && { defaultValue: dialect.mapDefaultValueToSequelize(col.defaultValue) },
             };
 
@@ -59,7 +59,7 @@ export class ModelBuilder extends Builder {
         const buildIndexDecoratorProps = (index: IIndexMetadata): Partial<IndexOptions & IndexFieldOptions> => {
             const props: Partial<IndexOptions & IndexFieldOptions> = {
                 name: index.name,
-                ...index.using && { using: index.using },
+                ...index.using != undefined && { using: index.using },
                 ...index.collation && { order: index.collation === 'A' ? 'ASC' : 'DESC' },
                 unique: index.unique,
             };

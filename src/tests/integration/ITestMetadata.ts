@@ -52,6 +52,12 @@ export interface ITestMetadata {
         getColumnNativeDataType: GetColumnNativeDataTypeFn;
         testValues: [string, any][];
     },
+    testColumns: {
+        nulls: string,
+        notNulls: string,
+        simplePrimary: string,
+        compositePrimary: string
+    },
     associations: ITestAssociationTableNames & {
         navProps?: ITestAssociationTableNames
     }

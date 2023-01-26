@@ -209,6 +209,12 @@ const testMetadata: ITestMetadata = {
             ['varbinary', Buffer.from('1 or 0')],
         ]
     },
+    testColumns: {
+        nulls: DATA_TYPES_TABLE_NAME,
+        notNulls: PERSON_TABLE_NAME,
+        simplePrimary: PERSON_TABLE_NAME,
+        compositePrimary: AUTHORS_BOOKS_TABLE_NAME
+    },
     associations: {
         oneToOne: {
             leftTable: PERSON_TABLE_NAME,

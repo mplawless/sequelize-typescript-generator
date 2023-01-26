@@ -54,17 +54,12 @@ export const generateNamedImports = (importsSpecifier: string[], moduleSpecifier
  * @param {string} modelFileName
  * @returns {ts.ExportDeclaration}
  */
-export const generateIndexExport = (modelFileName: string, changeAttributesInterface: boolean = false): ts.ExportDeclaration => {
+export const generateIndexExport = (modelFileName: string): ts.ExportDeclaration => {
     return ts.factory.createExportDeclaration(
         undefined,
         undefined,
         false,
-        changeAttributesInterface
-            ? ts.factory.createNamedExports([
-                ts.factory.createExportSpecifier(false, undefined, modelFileName), 
-                ts.factory.createExportSpecifier(false, modelFileName + 'Attributes', modelFileName + 'Attrs')
-            ])
-            : undefined,
+        undefined,
         ts.factory.createStringLiteral(`./${modelFileName}`)
     );
 };

@@ -4,6 +4,7 @@ import { camelCase, constantCase, pascalCase, snakeCase } from 'change-case/dist
 import { Optional } from 'sequelize';
 
 export const noSchemaPrefix = 'noschema.';
+export const defaultAttributesName = 'Attributes';
 
 export type Dictionary<T> = {[key: string]: T};
 export type ObjDictionary = Dictionary<{}>;
@@ -178,6 +179,7 @@ export const caseTransformer = (
             })
         },
         comment: tableMetadata.comment,
+        attributeSuffix: tableMetadata.attributeSuffix
     };
 
     for (const [columnName, columnMetadata] of Object.entries(tableMetadata.columns)) {

@@ -624,7 +624,8 @@ export class TestRunner {
                         const tableMetadata: ITableMetadata = {
                             originName: table.name,
                             ...table,
-                            columns: {}
+                            columns: {},
+                            attributeSuffix: 'foobar'
                         };
                         tablesMetadata[tableMetadata.fullTableName] = tableMetadata;
                     }

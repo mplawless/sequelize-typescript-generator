@@ -3,7 +3,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { IConfig } from '../config';
 import { createConnection } from "../connection";
 import { AssociationsParser, IAssociationMetadata, IForeignKey } from './AssociationsParser'
-import { caseTransformer, noSchemaPrefix, populateFullTableNameDictionary, Dictionary } from './utils';
+import { caseTransformer, noSchemaPrefix, defaultAttributesName, populateFullTableNameDictionary, Dictionary } from './utils';
 
 export interface ITablesMetadata {
     [tableName: string]: ITableMetadata;
@@ -26,6 +26,7 @@ export interface ITableMetadata extends ITable {
         [columnName: string]: IColumnMetadata;
     }
     associations?: IAssociationMetadata[];
+    attributeSuffix: string;
 }
 
 export interface IColumnMetadata {
@@ -156,6 +157,7 @@ export abstract class Dialect {
         const tablesMetadata: ITablesMetadata = {};
         const tableNameDictionary: Dictionary<ITableName> = {};
         const dupTableDictionary: Dictionary<number> = {};
+        const attrSuffixTableDictionary: Dictionary<number> = {};
 
         try {
             // Set schema for Postgres to 'public' if not provided
@@ -201,7 +203,8 @@ export abstract class Dialect {
                     ...table,
                     ...tableSchema && { schema: tableSchema},
                     timestamps: config.metadata?.timestamps ?? false,
-                    columns: {}
+                    columns: {},
+                    attributeSuffix: defaultAttributesName
                 };
 
                 for (const columnMetadata of columnsMetadata) {
@@ -210,6 +213,9 @@ export abstract class Dialect {
 
                 tablesMetadata[tableMetadata.fullTableName] = tableMetadata;
                 dupTableDictionary[tableMetadata.name] = (dupTableDictionary[tableMetadata.name] || 0) + 1;
+                if (tableMetadata.name.toLowerCase().endsWith(defaultAttributesName.toLowerCase())) {
+                    attrSuffixTableDictionary[tableMetadata.fullTableName.substring(0, tableMetadata.fullTableName.length - defaultAttributesName.length)] = 1;
+                }
             }
         }
         catch(err) {
@@ -224,6 +230,9 @@ export abstract class Dialect {
         for (const [tableName, tableMetadata] of Object.entries(tablesMetadata)) {
             if (dupTableDictionary[tableMetadata.name] > 1) {
                 tableMetadata.name = tableMetadata.schema + tableMetadata.name;
+            }
+            if (!!attrSuffixTableDictionary[tableName]) {
+                tableMetadata.attributeSuffix = 'Attrs';
             }
         }
 

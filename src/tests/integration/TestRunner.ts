@@ -578,6 +578,12 @@ export class TestRunner {
                     ) {
                         expect(JSON.stringify(receivedValue)).toStrictEqual(typeValue);
                     }
+                    else if (expectedValueType === 'buffer' &&
+                        receivedValueType === 'uint8array'
+                    ) {
+                        const receivedValueTypeBuffer = Buffer.isBuffer(receivedValue) ? 'buffer' : receivedValueType;
+                        expect(receivedValueTypeBuffer).toStrictEqual(expectedValueType);
+                    }
                     else {
                         expect(receivedValueType).toStrictEqual(expectedValueType);
                     }

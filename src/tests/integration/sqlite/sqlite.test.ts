@@ -115,6 +115,12 @@ export const testMetadata: ITestMetadata = {
             ['varchar', 'Hello world'],
         ],
     },
+    testColumns: {
+        nulls: DATA_TYPES_TABLE_NAME,
+        notNulls: PERSON_TABLE_NAME,
+        simplePrimary: PERSON_TABLE_NAME,
+        compositePrimary: AUTHORS_BOOKS_TABLE_NAME
+    },
     associations: {
         oneToOne: {
             leftTable: PERSON_TABLE_NAME,

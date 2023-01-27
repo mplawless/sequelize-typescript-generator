@@ -176,6 +176,12 @@ export const testMetadata: ITestMetadata = {
             ['json', JSON.stringify({key1: 'value1', key2: 'value2'})],
         ]
     },
+    testColumns: {
+        nulls: DATA_TYPES_TABLE_NAME,
+        notNulls: PERSON_TABLE_NAME,
+        simplePrimary: PERSON_TABLE_NAME,
+        compositePrimary: AUTHORS_BOOKS_TABLE_NAME
+    },
     associations: {
         oneToOne: {
             leftTable: PERSON_TABLE_NAME,

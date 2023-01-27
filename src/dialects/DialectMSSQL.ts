@@ -67,7 +67,7 @@ const jsDataTypesMap: { [key: string]: string } = {
     nvarchar: 'string',
     text: 'string',
     ntext: 'string',
-    date: 'Date',
+    date: 'string',
     datetime: 'Date',
     datetime2: 'Date',
     timestamp: 'Date',
